@@ -1,0 +1,179 @@
+import React, { useState, useEffect } from 'react';
+import { Landmark, Scale, Clock, Bell, FileText, Search } from 'lucide-react';
+
+export default function Header({ 
+  onSearchFocus, 
+  activeSchedulesCount, 
+  newVerdictsCount
+}) {
+  const [timeStr, setTimeStr] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short'
+      };
+      setTimeStr(now.toLocaleDateString('id-ID', options));
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 80; // height of fixed header
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">
+      {/* Top micro bar for announcement and clock */}
+      <div className="bg-blue-950 px-4 py-2.5 text-[10px] sm:text-xs text-blue-101 md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-center sm:justify-start gap-2">
+            <span className="inline-flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-400" id="live-indicator"></span>
+            <span className="font-semibold text-center sm:text-left">Portal Resmi Komisi Informasi Provinsi Jambi • Transparansi Publik</span>
+          </div>
+          <div className="flex items-center justify-center sm:justify-end gap-4">
+            <span className="flex items-center gap-1.5 bg-blue-900/50 px-3 py-1 rounded-sm text-blue-200">
+              <Clock className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span className="font-mono">{timeStr || 'Memuat waktu...'}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation Row */}
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 md:px-8 gap-2">
+        {/* Brand Logo */}
+        <div 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+          className="flex cursor-pointer items-center gap-2 sm:gap-3 transition-opacity hover:opacity-90 max-w-[65%] sm:max-w-none"
+          id="brand-logo"
+        >
+          <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-blue-900 border border-blue-800 text-amber-300 shadow-sm">
+            <Landmark className="h-4.5 w-4.5 sm:h-5.5 sm:w-5.5" />
+          </div>
+          <div className="overflow-hidden">
+            <div className="flex items-center gap-1 leading-none">
+              <span className="font-display text-xs sm:text-base font-bold tracking-tight text-slate-900 md:text-lg whitespace-nowrap">KOMISI INFORMASI</span>
+              <span className="rounded-md bg-amber-50 border border-amber-200 px-1 py-0.5 text-[8px] font-bold text-amber-800 leading-none">KI</span>
+            </div>
+            <h1 className="font-display text-[8px] sm:text-[10px] font-semibold tracking-wider text-slate-500 uppercase leading-none mt-1 truncate">
+              Provinsi Jambi • Portal Sengketa &amp; Putusan
+            </h1>
+          </div>
+        </div>
+
+        {/* Desktop Navigation Links */}
+        <nav className="hidden items-center gap-2 text-sm font-semibold text-slate-600 lg:flex" id="desktop-nav">
+          <button 
+            onClick={() => scrollToSection('schedules')} 
+            className="rounded-xl px-3.5 py-2 hover:bg-slate-50 hover:text-blue-900 transition-colors cursor-pointer"
+          >
+            Jadwal Sidang
+          </button>
+          <button 
+            onClick={() => scrollToSection('announcements')} 
+            className="rounded-xl px-3.5 py-2 hover:bg-slate-50 hover:text-blue-900 transition-colors cursor-pointer"
+          >
+            Pengumuman
+          </button>
+          <button 
+            onClick={() => scrollToSection('verdicts')} 
+            className="rounded-xl px-3.5 py-2 hover:bg-slate-50 hover:text-blue-900 transition-colors cursor-pointer"
+          >
+            Direktori Putusan
+          </button>
+          <button 
+            onClick={() => scrollToSection('contact')} 
+            className="rounded-xl px-3.5 py-2 hover:bg-slate-50 hover:text-blue-900 transition-colors cursor-pointer"
+          >
+            Kontak &amp; Pengaduan
+          </button>
+        </nav>
+
+        {/* Interactive Badges & Shortcut CTA */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Quick search shortcuts */}
+          <button
+            onClick={() => onSearchFocus('sidang')}
+            className="hidden items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 sm:flex cursor-pointer"
+            title="Cari nomor perkara sidang"
+            id="shortcut-schedules"
+          >
+            <Search className="h-3 w-3 text-blue-600" />
+            <span>Cari Sidang</span>
+            <span className="rounded bg-slate-200 px-1 py-0.5 text-[9px] font-mono font-bold text-slate-500">{activeSchedulesCount}</span>
+          </button>
+
+          <button
+            onClick={() => onSearchFocus('putusan')}
+            className="hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 sm:flex cursor-pointer"
+            title="Cari nomor putusan"
+            id="shortcut-verdicts"
+          >
+            <FileText className="h-3 w-3 text-blue-600" />
+            <span>Cari Putusan</span>
+            <span className="rounded bg-slate-200 px-1 py-0.5 text-[9px] font-mono font-bold text-slate-500">{newVerdictsCount}</span>
+          </button>
+
+          {/* Scale brand identifier badge */}
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700 border border-amber-200" title="Keadilan Terjamin">
+            <Scale className="h-5 w-5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Horizontal Navigation Links (Only below lg-screens with clean touch-friendly targets) */}
+      <div className="flex lg:hidden overflow-x-auto scrollbar-none border-t border-slate-150 bg-slate-50/90 px-3 py-2 text-[10px] sm:text-[11px] font-bold text-slate-600 shadow-inner">
+        <div className="flex gap-1 mx-auto min-w-full justify-around">
+          <button 
+            onClick={() => scrollToSection('schedules')} 
+            className="whitespace-nowrap rounded-lg px-2.5 py-1.5 hover:bg-white hover:text-blue-900 border border-transparent hover:border-slate-205 transition-all cursor-pointer min-h-[36px]"
+          >
+            Jadwal Sidang
+          </button>
+          <button 
+            onClick={() => scrollToSection('announcements')} 
+            className="whitespace-nowrap rounded-lg px-2.5 py-1.5 hover:bg-white hover:text-blue-900 border border-transparent hover:border-slate-205 transition-all cursor-pointer min-h-[36px]"
+          >
+            Pengumuman
+          </button>
+          <button 
+            onClick={() => scrollToSection('verdicts')} 
+            className="whitespace-nowrap rounded-lg px-2.5 py-1.5 hover:bg-white hover:text-blue-900 border border-transparent hover:border-slate-205 transition-all cursor-pointer min-h-[36px]"
+          >
+            Direktori Putusan
+          </button>
+          <button 
+            onClick={() => scrollToSection('contact')} 
+            className="whitespace-nowrap rounded-lg px-2.5 py-1.5 hover:bg-white hover:text-blue-900 border border-transparent hover:border-slate-205 transition-all cursor-pointer min-h-[36px]"
+          >
+            Kontak &amp; Aduan
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
